@@ -76,7 +76,7 @@ mkdir %~dp0\Build_UGlobalHotkey_%build_arch%
 cd %~dp0\Build_UGlobalHotkey_%build_arch%
 
 %qt_path%\bin\qmake.exe %~dp0\UGlobalHotkey\uglobalhotkey.qc.pro %qt_params%
-%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 8
+%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 4
 IF %ERRORLEVEL% NEQ 0 goto :error
 if NOT EXIST %~dp0\bin\%build_arch%\Release\UGlobalHotkey.dll goto :error
 
@@ -86,7 +86,7 @@ mkdir %~dp0\Build_qtsingleapp_%build_arch%
 cd %~dp0\Build_qtsingleapp_%build_arch%
 
 %qt_path%\bin\qmake.exe %~dp0\QtSingleApp\qtsingleapp\qtsingleapp\qtsingleapp.qc.pro %qt_params%
-%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 8
+%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 4
 IF %ERRORLEVEL% NEQ 0 goto :error
 if NOT EXIST %~dp0\bin\%build_arch%\Release\qtsingleapp.dll goto :error
 
@@ -96,7 +96,7 @@ mkdir %~dp0\Build_MiscHelpers_%build_arch%
 cd %~dp0\Build_MiscHelpers_%build_arch%
 
 %qt_path%\bin\qmake.exe %~dp0\MiscHelpers\MiscHelpers.qc.pro %qt_params%
-%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 8
+%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 4
 IF %ERRORLEVEL% NEQ 0 goto :error
 if NOT EXIST %~dp0\bin\%build_arch%\Release\MiscHelpers.dll goto :error
 
@@ -106,7 +106,7 @@ mkdir %~dp0\Build_QSbieAPI_%build_arch%
 cd %~dp0\Build_QSbieAPI_%build_arch%
 
 %qt_path%\bin\qmake.exe %~dp0\QSbieAPI\QSbieAPI.qc.pro %qt_params%
-%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 8
+%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 4
 IF %ERRORLEVEL% NEQ 0 goto :error
 if NOT EXIST %~dp0\bin\%build_arch%\Release\QSbieAPI.dll goto :error
 
@@ -121,7 +121,7 @@ if "%qt_version:~0,1%" == "5" (
 if "%qt_version:~0,1%" == "6" ( 
     %qt_path%\bin\qmake.exe %~dp0\SandMan\SandMan-Qt6.qc.pro %qt_params%
 )
-%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 8
+%~dp0..\..\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release -j 4
 IF %ERRORLEVEL% NEQ 0 goto :error
 if NOT EXIST %~dp0\bin\%build_arch%\Release\SandMan.exe goto :error
 

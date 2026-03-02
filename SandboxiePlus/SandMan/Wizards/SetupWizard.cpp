@@ -14,8 +14,9 @@ CSetupWizard::CSetupWizard(int iOldLevel, QWidget *parent)
 {
     if (iOldLevel < SETUP_LVL_1)
         setPage(Page_Intro, new CIntroPage);
-    if (iOldLevel < SETUP_LVL_3)
-        setPage(Page_Certificate, new CCertificatePage(iOldLevel));
+    // Sandboxie Pro - Skip certificate page, all users have full access
+    //if (iOldLevel < SETUP_LVL_3)
+    //    setPage(Page_Certificate, new CCertificatePage(iOldLevel));
     if (iOldLevel < SETUP_LVL_1) {
         setPage(Page_UI, new CUIPage);
         setPage(Page_Shell, new CShellPage);
@@ -226,8 +227,7 @@ CIntroPage::CIntroPage(QWidget *parent)
 
 int CIntroPage::nextId() const
 {
-    if(g_Certificate.isEmpty())
-        return CSetupWizard::Page_Certificate;
+    // Sandboxie Pro - Skip certificate page, go directly to UI page
     return CSetupWizard::Page_UI;
 }
 

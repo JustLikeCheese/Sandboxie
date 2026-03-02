@@ -20,7 +20,7 @@ Signature   = "$WINDOWS NT$"
 Class       = "SecurityEnhancer"                        ;This is determined by the work this filter driver does
 ClassGuid   = {d02bc3da-0c8e-4945-9bd5-f1883c226c8c}    ;This value is determined by the Class
 Provider    = "Sandboxie Holdings, LLC"
-DriverVer   = 01/01/2018,5.23.5
+DriverVer   = 03/01/2026,5.72.2
 CatalogFile = SbieDrv.cat
 
 [DestinationDirs]
@@ -46,7 +46,7 @@ AddService          = %ServiceName%,,MiniFilter.Service
 [MiniFilter.Service]
 DisplayName    = %ServiceName%
 Description    = %ServiceDescription%
-ServiceBinary  = %12%\examplefilesystem.sys
+ServiceBinary  = %12%\SbieDrv.sys
 ServiceType    = 2 ;    SERVICE_FILE_SYSTEM_DRIVER
 StartType      = 1 ;    SERVICE_SYSTEM_START
 ErrorControl   = 1 ;    SERVICE_ERROR_NORMAL

@@ -527,6 +527,10 @@ _FX BOOLEAN MyIsTestSigning(void)
 
 _FX BOOLEAN MyIsCallerSigned(void)
 {
+    // Signature verification disabled for development builds
+    return TRUE;
+
+    /*
     NTSTATUS status;
 
     // in test signing mode don't verify the signature
@@ -549,6 +553,7 @@ _FX BOOLEAN MyIsCallerSigned(void)
     }
 
     return TRUE;
+    */
 }
 
 

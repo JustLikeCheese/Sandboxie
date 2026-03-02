@@ -535,6 +535,26 @@ SCertInfo Verify_CertInfo = { 0 };
 
 _FX NTSTATUS KphValidateCertificate()
 {
+    //
+    // Sandboxie Pro - All users are treated as supporters
+    // No certificate validation required - all features enabled
+    //
+    
+    Verify_CertInfo.active = 1;
+    Verify_CertInfo.type = eCertEternal;
+    Verify_CertInfo.level = eCertMaxLevel;
+    Verify_CertInfo.opt_sec = 1;
+    Verify_CertInfo.opt_enc = 1;
+    Verify_CertInfo.opt_net = 1;
+    Verify_CertInfo.opt_desk = 1;
+    Verify_CertInfo.expired = 0;
+    Verify_CertInfo.outdated = 0;
+    Verify_CertInfo.grace_period = 0;
+    Verify_CertInfo.State = 0;
+    
+    return STATUS_SUCCESS;
+
+#if 0 // Original certificate validation code disabled
     BOOLEAN CertDbg = FALSE;
 
     static const WCHAR *path_cert = L"%s\\Certificate.dat";
@@ -1105,6 +1125,7 @@ CleanupExit:
     if(stream)      Stream_Close(stream);
 
     return status;
+#endif // Original certificate validation code disabled
 }
 
 

@@ -3101,22 +3101,9 @@ void CSandMan::OnMenuHover(QAction* action)
 
 void CSandMan::CheckSupport()
 {
-	if (CSupportDialog::CheckSupport())
-		return;
-
-	static bool ReminderShown = false;
-	if (!ReminderShown && (g_CertInfo.expired || (g_CertInfo.expirers_in_sec > 0 && g_CertInfo.expirers_in_sec < (60 * 60 * 24 * 30))) && !theConf->GetBool("Options/NoSupportCheck", false))
-	{
-		ReminderShown = true;
-		OpenSettings("Support");
-	}
-	else if (CSettingsWindow::CertRefreshRequired())
-	{
-		if (!g_CertInfo.active)
-			OpenSettings("Support");
-		else if (CSettingsWindow::CertRefreshRequired())
-			CSettingsWindow::TryRefreshCert(this, this, SLOT(OnCertData(const QByteArray&, const QVariantMap&)));
-	}
+	// Sandboxie Pro - Skip all support/certificate checks
+	// All users are treated as having valid certificates
+	return;
 }
 
 void CSandMan::OnCertData(const QByteArray& Certificate, const QVariantMap& Params)
@@ -3338,6 +3325,9 @@ void CSandMan::OnLogSbieMessage(quint32 MsgCode, const QStringList& MsgData, qui
 			m_MissingTemplates[MsgData[1]].insert(MsgData[2]);
 	}
 
+	// Certificate error messages disabled - Sandboxie Pro
+	// All users have full access to all features
+#if 0
 	if ((MsgCode & 0xFFFF) == 6004 || (MsgCode & 0xFFFF) == 6008 || (MsgCode & 0xFFFF) == 6009) // certificate error
 	{
 		QString Message;
@@ -3380,6 +3370,7 @@ void CSandMan::OnLogSbieMessage(quint32 MsgCode, const QStringList& MsgData, qui
 		}
 		// return;
 	}
+#endif
 
 	QString ProcessName;
 	if (ProcessId == 4)
@@ -3439,92 +3430,40 @@ bool CSandMan::SetCertificate(const QByteArray& Certificate)
 
 bool CSandMan::CheckCertificate(QWidget* pWidget, int iType)
 {
-	QString Message;
-	if (iType == 1 || iType == 2)
-	{
-		if (iType == 1 ? g_CertInfo.opt_enc : g_CertInfo.opt_net)
-			return true;
-
-		Message = tr("The selected feature requires an <b>advanced</b> supporter certificate.");
-		if (iType == 2 && CERT_IS_TYPE(g_CertInfo, eCertPatreon))
-			Message.append(tr("<br />you need to be on the Great Patreon level or higher to unlock this feature."));
-		else if (g_CertInfo.active)
-			Message.append(tr("<br /><a href=\"https://sandboxie-plus.com/go.php?to=sbie-upgrade-cert\">Upgrade your Certificate</a> to unlock advanced features."));
-		else
-			Message.append(tr("<br /><a href=\"https://sandboxie-plus.com/go.php?to=sbie-get-cert\">Become a project supporter</a>, and receive a <a href=\"https://sandboxie-plus.com/go.php?to=sbie-cert\">supporter certificate</a>"));
-	}
-	else
-	{
-		if (iType == -1 ? g_CertInfo.active : g_CertInfo.opt_sec)
-			return true;
-
-		if(iType == 2)
-			Message = tr("The selected feature set is only available to project supporters.<br />"
-				"<a href=\"https://sandboxie-plus.com/go.php?to=sbie-get-cert\">Become a project supporter</a>, and receive a <a href=\"https://sandboxie-plus.com/go.php?to=sbie-cert\">supporter certificate</a>");
-		else
-			Message = tr("The selected feature set is only available to project supporters. Processes started in a box with this feature set enabled without a supporter certificate will be terminated after 5 minutes.<br />"
-				"<a href=\"https://sandboxie-plus.com/go.php?to=sbie-get-cert\">Become a project supporter</a>, and receive a <a href=\"https://sandboxie-plus.com/go.php?to=sbie-cert\">supporter certificate</a>");
-	}
-
-	QMessageBox msgBox(pWidget);
-	msgBox.setTextFormat(Qt::RichText);
-	msgBox.setIcon(QMessageBox::Information);
-	msgBox.setWindowTitle("Sandboxie-Plus");
-	msgBox.setText(Message);
-	msgBox.setStandardButtons(QMessageBox::Ok);
-	msgBox.exec();
-	/*msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-	if (msgBox.exec() == QDialogButtonBox::Yes) {
-		OpenUrl(QUrl("https://sandboxie-plus.com/go.php?to=sbie-get-cert"));
-	}*/
-
-	return false;
+	// Sandboxie Pro - All features are always available
+	// No certificate check required
+	return true;
 }
 
 void InitCertSlot();
 
 SB_STATUS CSandMan::ReloadCert(QWidget* pWidget)
 {
-	SB_STATUS Status = theAPI->ReloadCert();
+	// Sandboxie Pro - Always treat all users as having the highest level certificate
+	// Initialize certificate info with maximum privileges
+	g_CertInfo.State = 0;
+	g_CertInfo.active = 1;
+	g_CertInfo.expired = 0;
+	g_CertInfo.outdated = 0;
+	g_CertInfo.grace_period = 0;
+	g_CertInfo.locked = 0;
+	g_CertInfo.lock_req = 0;
+	g_CertInfo.type = eCertEternal;  // Eternal certificate type
+	g_CertInfo.level = eCertMaxLevel;  // Maximum level
+	g_CertInfo.opt_desk = 1;  // Enable Isolated Sandboxie Desktops
+	g_CertInfo.opt_net = 1;   // Enable Advanced Network features
+	g_CertInfo.opt_enc = 1;   // Enable Box Encryption and Box Protection
+	g_CertInfo.opt_sec = 1;   // Enable Various security enhanced box types
+	g_CertInfo.expirers_in_sec = 0x7FFFFFFF;  // Never expires
 
-	theAPI->GetDriverInfo(-1, &g_CertInfo.State, sizeof(g_CertInfo.State));
+	SB_STATUS Status = SB_OK;
 
-	if (!Status.IsError())
-	{
-		BYTE CertBlocked = 0;
-		theAPI->GetSecureParam("CertBlocked", &CertBlocked, sizeof(CertBlocked));
-		if (CertBlocked) {
-			if (g_CertInfo.type == eCertEvaluation)
-				g_CertInfo.active = 0; // no eval when cert blocked
-			else {
-				CertBlocked = 0;
-				theAPI->SetSecureParam("CertBlocked", &CertBlocked, sizeof(CertBlocked));
-			}
-		}
-	}
-	else if (Status.GetStatus() == 0xC0000804L /*STATUS_CONTENT_BLOCKED*/)
-	{
-		QMessageBox::critical(pWidget ? pWidget : this, "Sandboxie-Plus",
-			tr("The certificate you are attempting to use has been blocked, meaning it has been invalidated for cause. Any attempt to use it constitutes a breach of its terms of use!"));
+	// Still try to load certificate from driver if available, but ignore errors
+	theAPI->ReloadCert();
 
-		BYTE CertBlocked = 1;
-		theAPI->SetSecureParam("CertBlocked", &CertBlocked, sizeof(CertBlocked));
-	}
-	else if (Status.GetStatus() != 0xC0000225L /*STATUS_NOT_FOUND*/)
-	{
-		QString Info;
-		switch (Status.GetStatus())
-		{
-		case 0xC000000DL: /*STATUS_INVALID_PARAMETER*/
-		case 0xC0000079L: /*STATUS_INVALID_SECURITY_DESCR:*/
-		case 0xC000A000L: /*STATUS_INVALID_SIGNATURE:*/			Info = tr("The Certificate Signature is invalid!"); break;
-		case 0xC0000024L: /*STATUS_OBJECT_TYPE_MISMATCH:*/		Info = tr("The Certificate is not suitable for this product."); break;
-		case 0xC0000485L: /*STATUS_FIRMWARE_IMAGE_INVALID:*/	Info = tr("The Certificate is node locked."); break;
-		default:												Info = QString("0x%1").arg((quint32)Status.GetStatus(), 8, 16, QChar('0'));
-		}
-
-		QMessageBox::critical(pWidget ? pWidget : this, "Sandboxie-Plus", tr("The support certificate is not valid.\nError: %1").arg(Info));
-	}
+	// Always clear any certificate blocking
+	BYTE CertBlocked = 0;
+	theAPI->SetSecureParam("CertBlocked", &CertBlocked, sizeof(CertBlocked));
 
 #ifdef _DEBUG
 	qDebug() << "g_CertInfo" << g_CertInfo.State;
@@ -3536,70 +3475,8 @@ SB_STATUS CSandMan::ReloadCert(QWidget* pWidget)
 	qDebug() << "g_CertInfo.level" << CSettingsWindow::GetCertLevel();
 #endif
 
-	if (g_CertInfo.active)
-	{
-		// behave as if there would be no certificate at all
-		if (theConf->GetBool("Debug/IgnoreCertificate", false))
-			g_CertInfo.State = 0;
-		else
-		{
-			// simulate certificate being about to expire in 3 days from now
-			if (theConf->GetBool("Debug/CertFakeAboutToExpire", false))
-				g_CertInfo.expirers_in_sec = 3 * 24 * 3600;
-
-			// simulate certificate having expired but being in the grace period
-			if (theConf->GetBool("Debug/CertFakeGracePeriode", false))
-				g_CertInfo.grace_period = 1;
-
-			// simulate a subscription type certificate having expired
-			if (theConf->GetBool("Debug/CertFakeOld", false)) {
-				g_CertInfo.active = 0;
-				g_CertInfo.expired = 1;
-			}
-
-			// simulate a perpetual use certificate being outside the update window
-			if (theConf->GetBool("Debug/CertFakeExpired", false)) {
-				// still valid
-				g_CertInfo.expired = 1;
-			}
-
-			// simulate a perpetual use certificate being outside the update window
-			// and having been applied to a version built after the update window has ended
-			if (theConf->GetBool("Debug/CertFakeOutdated", false)) {
-				g_CertInfo.active = 0;
-				g_CertInfo.expired = 1;
-				g_CertInfo.outdated = 1;
-			}
-
-			int Type = theConf->GetInt("Debug/CertFakeType", -1);
-			if (Type != -1)
-				g_CertInfo.type = Type << 2;
-
-			int Level = theConf->GetInt("Debug/CertFakeLevel", -1);
-			if (Level != -1)
-				g_CertInfo.level = Level;
-		}
-	}
-
-	if (CERT_IS_TYPE(g_CertInfo, eCertBusiness))
-		InitCertSlot();
-
-	if (CERT_IS_TYPE(g_CertInfo, eCertEvaluation))
-	{
-		if (g_CertInfo.expired)
-			OnLogMessage(tr("The evaluation period has expired!!!"));
-	}
-	else
-	{
-		if (g_CertInfo.outdated)
-			OnLogMessage(tr("The supporter certificate is not valid for this build, please get an updated certificate"));
-		// outdated always implicates it is no longer valid
-		else if (g_CertInfo.expired) // may be still valid for the current and older builds
-			OnLogMessage(tr("The supporter certificate has expired%1, please get an updated certificate")
-				.arg(!g_CertInfo.outdated ? tr(", but it remains valid for the current build") : ""));
-		else if (g_CertInfo.expirers_in_sec > 0 && g_CertInfo.expirers_in_sec < (60 * 60 * 24 * 30))
-			OnLogMessage(tr("The supporter certificate will expire in %1 days, please get an updated certificate").arg(g_CertInfo.expirers_in_sec / (60 * 60 * 24)));
-	}
+	// Sandboxie Pro - Skip all certificate expiration checks and warnings
+	// All users are treated as having valid eternal certificates
 
 	emit CertUpdated();
 

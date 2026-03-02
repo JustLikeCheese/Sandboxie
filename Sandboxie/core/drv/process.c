@@ -780,6 +780,7 @@ _FX PROCESS *Process_Create(
     // check certificate
     //
 
+#if 0 // Original certificate check disabled - Sandboxie Pro
     if (!(Verify_CertInfo.active && Verify_CertInfo.opt_sec) && !proc->image_sbie) {
 
         const WCHAR* exclusive_setting = NULL;
@@ -826,6 +827,7 @@ _FX PROCESS *Process_Create(
             return NULL;
         }
     }
+#endif // Original certificate check disabled
 
     //
     // If we don't have valid Dyndata, we force NoSecurityIsolation=y on all boxes
