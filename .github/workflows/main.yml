@@ -196,6 +196,59 @@ jobs:
             Installer/SbiePlus_x64/*
           retention-days: 60
 
+    #
+    # Build Installer
+    #
+
+      - name: Setup Inno Setup
+        run: |
+          # Use the pre-installed Inno Setup or install if not present
+          if (Test-Path "C:\Program Files (x86)\Inno Setup 6") {
+            echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+          } elseif (Test-Path "C:\Program Files (x86)\Inno Setup 7") {
+            echo "C:\Program Files (x86)\Inno Setup 7" >> $env:GITHUB_PATH
+          } else {
+            choco install innosetup -y
+            echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+          }
+        shell: pwsh
+
+      - name: Get version from buildVariables.cmd
+        shell: cmd
+        run: |
+          @echo on
+          call "${{ github.workspace }}\Installer\buildVariables.cmd" build_qt6
+          echo my_ver=%my_ver% >> %GITHUB_ENV%
+          echo sbie_ver=%sbie_ver% >> %GITHUB_ENV%
+
+      - name: Prepare Installer directory structure
+        shell: cmd
+        run: |
+          mkdir Installer\Assets\Plus\Release
+          xcopy /E /I /Y Installer\SbiePlus_x64 Installer\Assets\Plus\Release\SbiePlus_x64
+
+      - name: Create placeholder files for optional components
+        shell: cmd
+        run: |
+          cd Installer\Assets\Plus
+          if not exist imdisk_files.cab echo. > imdisk_files.cab
+          if not exist imdisk_install.bat echo rem ImDisk installer placeholder > imdisk_install.bat
+
+      - name: Build Sandboxie-Plus x64 Installer
+        shell: pwsh
+        run: |
+          cd Installer\Assets\Plus
+          $iscc = if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") { "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" } else { "C:\Program Files (x86)\Inno Setup 7\ISCC.exe" }
+          & $iscc /O".\Output" Sandboxie-Plus.iss /DMyAppVersion=$env:my_ver /DMyAppArch=x64 /DMyAppSrc=SbiePlus_x64
+
+      - name: Upload Sandboxie-Plus x64 Installer
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: Sandboxie-Plus-x64-Installer
+          path: |
+            Installer/Assets/Plus/Output/Sandboxie-Plus-x64-*.exe
+          retention-days: 60
+
 
 
 
@@ -305,4 +358,63 @@ jobs:
           name: Sandboxie_ARM64
           path: |
             Installer/SbiePlus_a64/*
+          retention-days: 60
+
+    #
+    # Build Installer
+    #
+
+      - name: Setup Inno Setup
+        run: |
+          # Use the pre-installed Inno Setup or install if not present
+          if (Test-Path "C:\Program Files (x86)\Inno Setup 6") {
+            echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+          } elseif (Test-Path "C:\Program Files (x86)\Inno Setup 7") {
+            echo "C:\Program Files (x86)\Inno Setup 7" >> $env:GITHUB_PATH
+          } else {
+            choco install innosetup -y
+            echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+          }
+        shell: pwsh
+
+      - name: Download Assets artifact
+        uses: actions/download-artifact@v6.0.0
+        with:
+          name: Assets
+          path: Installer/Assets
+
+      - name: Get version from buildVariables.cmd
+        shell: cmd
+        run: |
+          @echo on
+          call "${{ github.workspace }}\Installer\buildVariables.cmd" build_qt6
+          echo my_ver=%my_ver% >> %GITHUB_ENV%
+          echo sbie_ver=%sbie_ver% >> %GITHUB_ENV%
+
+      - name: Prepare Installer directory structure
+        shell: cmd
+        run: |
+          if not exist Installer\Assets\Plus\Release mkdir Installer\Assets\Plus\Release
+          xcopy /E /I /Y Installer\SbiePlus_a64 Installer\Assets\Plus\Release\SbiePlus_a64
+
+      - name: Create placeholder files for optional components
+        shell: cmd
+        run: |
+          cd Installer\Assets\Plus
+          if not exist imdisk_files.cab echo. > imdisk_files.cab
+          if not exist imdisk_install.bat echo rem ImDisk installer placeholder > imdisk_install.bat
+
+      - name: Build Sandboxie-Plus ARM64 Installer
+        shell: pwsh
+        run: |
+          cd Installer\Assets\Plus
+          $iscc = if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") { "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" } else { "C:\Program Files (x86)\Inno Setup 7\ISCC.exe" }
+          & $iscc /O".\Output" Sandboxie-Plus.iss /DMyAppVersion=$env:my_ver /DMyAppArch=arm64 /DMyAppSrc=SbiePlus_a64
+
+      - name: Upload Sandboxie-Plus ARM64 Installer
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: Sandboxie-Plus-ARM64-Installer
+          path: |
+            Installer/Assets/Plus/Output/Sandboxie-Plus-arm64-*.exe
           retention-days: 60
