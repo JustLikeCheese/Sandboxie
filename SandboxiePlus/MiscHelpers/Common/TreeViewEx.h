@@ -2,73 +2,71 @@
 
 #include <QStyledItemDelegate>
 
-__inline uint qHash( const QVariant & var )
+__inline size_t qHash( const QVariant & var )
 {
     if ( !var.isValid() /*|| var.isNull()*/ )
         //return -1;
         Q_ASSERT(0);
 
-    switch ( var.type() )
+    switch ( var.typeId() )
     {
-        case QVariant::Int:
+        case QMetaType::Int:
                 return qHash( var.toInt() );
             break;
-        case QVariant::UInt:
+        case QMetaType::UInt:
                 return qHash( var.toUInt() );
             break;
-        case QVariant::Bool:
+        case QMetaType::Bool:
                 return qHash( var.toUInt() );
             break;
-        case QVariant::Double:
+        case QMetaType::Double:
                 return qHash( var.toUInt() );
             break;
-        case QVariant::LongLong:
+        case QMetaType::LongLong:
                 return qHash( var.toLongLong() );
             break;
-        case QVariant::ULongLong:
+        case QMetaType::ULongLong:
                 return qHash( var.toULongLong() );
             break;
-        case QVariant::String:
+        case QMetaType::QString:
                 return qHash( var.toString() );
             break;
-        case QVariant::Char:
+        case QMetaType::Char:
                 return qHash( var.toChar() );
             break;
-        case QVariant::StringList:
+        case QMetaType::QStringList:
                 return qHash( var.toString() );
             break;
-        case QVariant::ByteArray:
+        case QMetaType::QByteArray:
                 return qHash( var.toByteArray() );
             break;
-        case QVariant::Date:
-        case QVariant::Time:
-        case QVariant::DateTime:
-        case QVariant::Url:
-        case QVariant::Locale:
-        //case QVariant::RegExp:
+        case QMetaType::QDate:
+        case QMetaType::QTime:
+        case QMetaType::QDateTime:
+        case QMetaType::QUrl:
+        case QMetaType::QLocale:
+        //case QMetaType::QRegExp:
         //        return qHash( var.toString() );
             break;
-        case QVariant::Map:
-        case QVariant::List:
-        case QVariant::BitArray:
-        case QVariant::Size:
-        case QVariant::SizeF:
-        case QVariant::Rect:
-        case QVariant::LineF:
-        case QVariant::Line:
-        case QVariant::RectF:
-        case QVariant::Point:
-        case QVariant::PointF:
+        case QMetaType::QVariantMap:
+        case QMetaType::QVariantList:
+        case QMetaType::QBitArray:
+        case QMetaType::QSize:
+        case QMetaType::QSizeF:
+        case QMetaType::QRect:
+        case QMetaType::QLineF:
+        case QMetaType::QLine:
+        case QMetaType::QRectF:
+        case QMetaType::QPoint:
+        case QMetaType::QPointF:
             // not supported yet
             break;
-        case QVariant::UserType:
-        case QVariant::Invalid:
         default:
-            return -1;
+            return (size_t)-1;
     }
 
     // could not generate a hash for the given variant
-    return -1;
+    return (size_t)-1;
 }
 
 #include "../mischelpers_global.h"

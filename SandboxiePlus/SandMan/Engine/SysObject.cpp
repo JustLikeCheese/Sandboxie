@@ -328,15 +328,15 @@ QJSValue JSysObject::setRegValue(const QString& Key, const QString& Name, const 
         DWORD dwDataSize = 0;
 
         if (Type.isEmpty()) {
-            switch (Value.type()) {
-            case QVariant::String:      dwType = REG_SZ; break;
-            case QVariant::StringList:  dwType = REG_MULTI_SZ; break;
-            case QVariant::ByteArray:   dwType = REG_BINARY; break;
-            case QVariant::Int:
-            case QVariant::UInt:        dwType = REG_DWORD; break;
-            case QVariant::Double:      // lets cast double to QDWORD
-            case QVariant::ULongLong:
-            case QVariant::LongLong:    dwType = REG_QWORD; break;
+            switch (Value.typeId()) {
+            case QMetaType::QString:      dwType = REG_SZ; break;
+            case QMetaType::QStringList:  dwType = REG_MULTI_SZ; break;
+            case QMetaType::QByteArray:   dwType = REG_BINARY; break;
+            case QMetaType::Int:
+            case QMetaType::UInt:        dwType = REG_DWORD; break;
+            case QMetaType::Double:      // lets cast double to QDWORD
+            case QMetaType::ULongLong:
+            case QMetaType::LongLong:    dwType = REG_QWORD; break;
             }
         }
         else if (Type.compare("REG_NONE", Qt::CaseInsensitive) == 0)

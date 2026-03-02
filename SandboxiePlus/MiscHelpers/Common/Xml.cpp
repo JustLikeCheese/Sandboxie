@@ -66,49 +66,49 @@ QVariant CXml::Parse(QXmlStreamReader &xml, bool bLazy)
 void CXml::Serialize(const QString& Name, const QVariant& Variant, QXmlStreamWriter &xml, bool bLazy)
 {
 	xml.writeStartElement(Name);
-	xml.writeAttribute("Type", GetTypeStr(Variant.type()));
-	switch(Variant.type())
+	xml.writeAttribute("Type", GetTypeStr(Variant.typeId()));
+	switch(Variant.typeId())
 	{
-		case QVariant::Map:
+		case QMetaType::QVariantMap:
 		{
 			QVariantMap Map = Variant.toMap();
 			for(QVariantMap::iterator I = Map.begin(); I != Map.end(); ++I)
 				Serialize(I.key(), I.value(), xml, bLazy);
 			break;
 		}
-		case QVariant::Hash:
+		case QMetaType::QVariantHash:
 		{
 			QVariantHash Hash = Variant.toHash();
 			for(QVariantHash::iterator I = Hash.begin(); I != Hash.end(); ++I)
 				Serialize(I.key(), I.value(), xml, bLazy);
 			break;
 		}
-		case QVariant::List:
+		case QMetaType::QVariantList:
 		{
 			QVariantList List = Variant.toList();
 			for(QVariantList::iterator I = List.begin(); I != List.end(); ++I)
 				Serialize("Variant", *I, xml, bLazy);
 			break;
 		}
-		case QVariant::StringList:
+		case QMetaType::QStringList:
 		{
 			QStringList List = Variant.toStringList();
 			for(QStringList::iterator I = List.begin(); I != List.end(); ++I)
 				Serialize("Variant", *I, xml, bLazy);
 			break;
 		}
-		case QVariant::ByteArray:
+		case QMetaType::QByteArray:
 			if(!bLazy)
 			{
 				xml.writeCharacters (Variant.toByteArray().toBase64());
 				break;
 			}
 		default:
-			ASSERT(Variant.canConvert(QVariant::String));
+			ASSERT(Variant.canConvert(QMetaType::QString));
 			xml.writeCharacters(Variant.toString().toUtf8().toPercentEncoding(" :;/|,'+()"));
 			//xml.writeCharacters (Variant.toString().replace("\\","\\\\").replace("\r","\\r").replace("\n","\\n"));
 			break;
-		case QVariant::Invalid:
+		case QMetaType::UnknownType:
 			break;
 	}
 	xml.writeEndElement();
@@ -117,7 +117,7 @@ void CXml::Serialize(const QString& Name, const QVariant& Variant, QXmlStreamWri
 bool CXml::Parse(QString &Name, QVariant &Variant, QXmlStreamReader &xml, bool bLazy)
 {
 	bool bOpen = false;
-	QVariant::Type eType = QVariant::Invalid;
+	QMetaType::Type eType = QMetaType::UnknownType;
 	QString Text;
 	while (!xml.atEnd())
 	{
@@ -136,7 +136,7 @@ bool CXml::Parse(QString &Name, QVariant &Variant, QXmlStreamReader &xml, bool b
 			QVariant Item;
 			switch(eType)
 			{
-				case QVariant::Map:
+				case QMetaType::QVariantMap:
 				{
 					QVariantMap Map;
 					while(Parse(Temp, Item, xml, bLazy))
@@ -144,7 +144,7 @@ bool CXml::Parse(QString &Name, QVariant &Variant, QXmlStreamReader &xml, bool b
 					Variant = Map;
 					return true;
 				}
-				case QVariant::Hash:
+				case QMetaType::QVariantHash:
 				{
 					QVariantHash Hash;
 					while(Parse(Temp, Item, xml, bLazy))
@@ -152,7 +152,7 @@ bool CXml::Parse(QString &Name, QVariant &Variant, QXmlStreamReader &xml, bool b
 					Variant = Hash;
 					return true;
 				}
-				case QVariant::List:
+				case QMetaType::QVariantList:
 				{
 					QVariantList List;
 					while(Parse(Temp, Item, xml, bLazy))
@@ -160,7 +160,7 @@ bool CXml::Parse(QString &Name, QVariant &Variant, QXmlStreamReader &xml, bool b
 					Variant = List;
 					return true;
 				}
-				case QVariant::StringList:
+				case QMetaType::QStringList:
 				{
 					QStringList List;
 					while(Parse(Temp, Item, xml, bLazy))
@@ -179,7 +179,7 @@ bool CXml::Parse(QString &Name, QVariant &Variant, QXmlStreamReader &xml, bool b
 		{
 			if(bOpen)
 			{
-				if(eType == QVariant::ByteArray && !bLazy)
+				if(eType == QMetaType::QByteArray && !bLazy)
 					Variant.setValue(QByteArray::fromBase64(Text.toLatin1()));
 				else
 				{
@@ -202,10 +202,10 @@ bool CXml::Parse(QString &Name, QVariant &Variant, QXmlStreamReader &xml, bool b
 					}*/
 
 					Variant = QString::fromUtf8(QByteArray::fromPercentEncoding(Text.toLatin1()));
-					if(eType) // type is optional
+					if(eType != QMetaType::UnknownType) // type is optional
 					{
 						ASSERT(Variant.canConvert(eType));
-						Variant.convert(eType);
+						Variant.convert(QMetaType(eType));
 					}
 				}
 				return true;
@@ -227,25 +227,25 @@ bool CXml::Parse(QString &Name, QVariant &Variant, QXmlStreamReader &xml, bool b
 struct SQVariants{
 	SQVariants()
 	{
-		Map.insert("Invalid"	, QVariant::Invalid);
+		Map.insert("Invalid"	, QMetaType::UnknownType);
 
-		Map.insert("Bool"		, QVariant::Bool);
-		Map.insert("Int"		, QVariant::Int);
-		Map.insert("UInt"		, QVariant::UInt);
-		Map.insert("LongLong"	, QVariant::LongLong);
-		Map.insert("ULongLong"	, QVariant::ULongLong);
-		Map.insert("Double"		, QVariant::Double);
-		Map.insert("Char"		, QVariant::Char);
-		Map.insert("Map"		, QVariant::Map);	// container type
-		Map.insert("List"		, QVariant::List);	// container type
-		Map.insert("String"		, QVariant::String);
-		Map.insert("StringList"	, QVariant::StringList);	// container type
-		Map.insert("ByteArray"	, QVariant::ByteArray);
-		//Map.insert("BitArray"	, QVariant::BitArray);
-		Map.insert("Date"		, QVariant::Date);
-		Map.insert("Time"		, QVariant::Time);
-		Map.insert("DateTime"	, QVariant::DateTime);
-		Map.insert("Url"		, QVariant::Url);
+		Map.insert("Bool"		, QMetaType::Bool);
+		Map.insert("Int"		, QMetaType::Int);
+		Map.insert("UInt"		, QMetaType::UInt);
+		Map.insert("LongLong"	, QMetaType::LongLong);
+		Map.insert("ULongLong"	, QMetaType::ULongLong);
+		Map.insert("Double"		, QMetaType::Double);
+		Map.insert("Char"		, QMetaType::Char);
+		Map.insert("Map"		, QMetaType::QVariantMap);	// container type
+		Map.insert("List"		, QMetaType::QVariantList);	// container type
+		Map.insert("String"		, QMetaType::QString);
+		Map.insert("StringList"	, QMetaType::QStringList);	// container type
+		Map.insert("ByteArray"	, QMetaType::QByteArray);
+		//Map.insert("BitArray"	, QMetaType::QBitArray);
+		Map.insert("Date"		, QMetaType::QDate);
+		Map.insert("Time"		, QMetaType::QTime);
+		Map.insert("DateTime"	, QMetaType::QDateTime);
+		Map.insert("Url"		, QMetaType::QUrl);
 		/*Map.insert("Locale"		, 18);
 		Map.insert("Rect"		, 19);
 		Map.insert("RectF"		, 20);
@@ -256,7 +256,7 @@ struct SQVariants{
 		Map.insert("Point"		, 25);
 		Map.insert("PointF"		, 26);
 		Map.insert("RegExp"		, 27);*/
-		Map.insert("Hash"		, QVariant::Hash);	// container type
+		Map.insert("Hash"		, QMetaType::QVariantHash);	// container type
 
 		/*Map.insert("Font"		, 64);
 		Map.insert("Pixmap"		, 65);
@@ -286,4 +286,4 @@ struct SQVariants{
 } SQVariants;
 
 QString CXml::GetTypeStr(int Type)			{return SQVariants.Map.key(Type, "Invalid");}
-QVariant::Type CXml::GetType(QString Type)	{return (QVariant::Type)SQVariants.Map.value(Type, 0);}
+QMetaType::Type CXml::GetType(QString Type)	{return (QMetaType::Type)SQVariants.Map.value(Type, 0);}

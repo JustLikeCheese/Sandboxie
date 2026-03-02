@@ -21,5 +21,5 @@ protected:
 	static bool Parse(QString &Name, QVariant &Variant, QXmlStreamReader &xml, bool bLazy = false);
 
 	static QString GetTypeStr(int Type);
-	static QVariant::Type GetType(QString Type);
+	static QMetaType::Type GetType(QString Type);
 };

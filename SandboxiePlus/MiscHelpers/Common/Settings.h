@@ -63,7 +63,7 @@ public:
 		{
 			if(MinValue != MaxValue)
 			{
-				if(!value.canConvert(QVariant::LongLong))
+				if(!value.canConvert<qint64>())
 					return false;
 				qint64 Test = value.toLongLong();
 				if(Test < MinValue || MinValue > MaxValue)
@@ -71,7 +71,7 @@ public:
 			}
 			else if(!Values.isEmpty())
 			{
-				if(!value.canConvert(QVariant::String))
+				if(!value.canConvert<QString>())
 					return false;
 				if(!Values.contains(value.toString()))
 					return false;

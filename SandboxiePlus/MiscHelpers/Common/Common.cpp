@@ -226,7 +226,7 @@ TArguments GetArguments(const QString& Arguments, QChar Separator, QChar Assigne
 			if(Char == Separator)
 			{
 				if(First) {*First = Name; First = NULL;}
-				else ArgumentList.insertMulti("",Name.trimmed());
+				else ArgumentList.insert("",Name.trimmed());
 				Name.clear();
 			}
 			else if(Char == Assigner)
@@ -239,7 +239,7 @@ TArguments GetArguments(const QString& Arguments, QChar Separator, QChar Assigne
 			if(Char == Separator)
 			{
 				if (bLowerKeys) Name = Name.toLower();
-				ArgumentList.insertMulti(Name.trimmed(),Value.trimmed());
+				ArgumentList.insert(Name.trimmed(),Value.trimmed());
 				//if(First) {*First = Name; First = NULL;}
 				Name.clear();
 				Value.clear();
@@ -255,13 +255,13 @@ TArguments GetArguments(const QString& Arguments, QChar Separator, QChar Assigne
 		if(bReadValue)
 		{
 			if (bLowerKeys) Name = Name.toLower();
-			ArgumentList.insertMulti(Name.trimmed(),Value.trimmed());
+			ArgumentList.insert(Name.trimmed(),Value.trimmed());
 			//if (First) { *First = Name; }
 		}
 		else
 		{
 			if (First) { *First = Name; }
-			else ArgumentList.insertMulti("", Name.trimmed());
+			else ArgumentList.insert("", Name.trimmed());
 		}
 	}
 
@@ -611,15 +611,15 @@ void SetPaleteTexture(QPalette& palette, QPalette::ColorRole role, const QImage&
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool operator < (const QVariant& l, const QVariant& r)
 {
-	auto lt = l.type();
+	auto lt = l.typeId();
 	//auto lv = l.isValid();
 	//auto ln = l.isNull();
-	auto rt = r.type();
+	auto rt = r.typeId();
 	//auto rv = r.isValid();
 	//auto rn = r.isNull();
 	if(lt != rt)
 		return lt < rt;
-	if (lt == QVariant::List)
+	if (lt == QMetaType::QVariantList)
 	{
 		auto lList = l.toList();
 		auto rList = r.toList();

@@ -693,7 +693,7 @@ void CSandMan::OnBoxMenuHover(QAction* action)
 
 	int tipMode = CTrayTreeWidget::GetTrayStatusTipMode();
 
-	if (action->data().type() != QVariant::String) {
+	if (action->data().typeId() != QMetaType::QString) {
 		QToolTip::hideText();
 		return;
 	}

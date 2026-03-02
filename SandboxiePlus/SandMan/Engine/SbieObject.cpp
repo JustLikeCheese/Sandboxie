@@ -216,7 +216,7 @@ void CSbieObject::ShellRemove()
 
 void CSbieObject::LogMessage(const QVariant& Message, bool bNotify)
 {
-	if (Message.type() == QVariant::Map) {
+	if (Message.typeId() == QMetaType::QVariantMap) {
 		QVariantMap Data = Message.toMap();
 		theGUI->OnLogSbieMessage(Data["sbiemsg"].toInt(), Data["params"].toStringList(), 4);
 	} else

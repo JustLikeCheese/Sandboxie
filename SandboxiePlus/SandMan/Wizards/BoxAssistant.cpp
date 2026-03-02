@@ -708,7 +708,7 @@ void CRunPage::OnStateChanged(int state, const QString& Text)
                     QComboBox* pCombo = new QComboBox();
                     pWidget = pCombo;
                     foreach(const QVariant & vItem, Entry["items"].toList()) {
-                        if (vItem.type() == QVariant::Map) {
+                        if (vItem.typeId() == QMetaType::QVariantMap) {
                             QVariantMap Item = vItem.toMap();
                             pCombo->addItem(theGUI->GetScripts()->Tr(Item["name"].toString()), Item["value"]);
                         } else
