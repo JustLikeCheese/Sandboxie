@@ -527,27 +527,7 @@ _FX BOOLEAN MyIsTestSigning(void)
 
 _FX BOOLEAN MyIsCallerSigned(void)
 {
-    NTSTATUS status;
-
-    // in test signing mode don't verify the signature
-    if (Driver_OsTestSigning)
-        return TRUE;
-
-    // if this is a node locked develoepr certificate don't verify the signature
-    if (Verify_CertInfo.type == eCertDeveloper && Verify_CertInfo.active)
-        return TRUE;
-
-    status = KphVerifyCurrentProcess();
-
-    //DbgPrint("Image Signature Verification result: 0x%08x\r\n", status);
-
-    if (!NT_SUCCESS(status)) {
-
-        //Log_Status(MSG_1330, 0, status);
-
-        return FALSE;
-    }
-
+    // Always return TRUE - signature verification disabled
     return TRUE;
 }
 
@@ -566,12 +546,22 @@ _FX NTSTATUS MyValidateCertificate(void)
     if(!*g_uuid_str)
         InitFwUuid();
 
-    NTSTATUS status = KphValidateCertificate();
+    Verify_CertInfo.State = 0;
+    Verify_CertInfo.active = 1;
+    Verify_CertInfo.expired = 0;
+    Verify_CertInfo.outdated = 0;
+    Verify_CertInfo.grace_period = 0;
+    Verify_CertInfo.locked = 0;
+    Verify_CertInfo.lock_req = 0;
+    Verify_CertInfo.type = eCertEternal;
+    Verify_CertInfo.level = eCertMaxLevel;
+    Verify_CertInfo.opt_desk = 1;
+    Verify_CertInfo.opt_net = 1;
+    Verify_CertInfo.opt_enc = 1;
+    Verify_CertInfo.opt_sec = 1;
+    Verify_CertInfo.expirers_in_sec = 0;
 
-    if (status == STATUS_ACCOUNT_EXPIRED)
-        status = STATUS_SUCCESS;
-
-    return status;
+    return STATUS_SUCCESS;
 }
 
 
